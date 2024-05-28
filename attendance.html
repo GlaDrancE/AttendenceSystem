@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+        integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body>
+    <style>
+        header {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 1rem;
+        }
+
+        #top-header {
+            width: 80%;
+            margin: auto;
+        }
+
+        table td,
+        th {
+            text-align: center;
+        }
+
+        select {
+            margin: 1rem;
+        }
+        .present{
+            border-radius: 8px;
+            background: rgb(0, 238, 0);
+            border: none;
+            color: white;
+        }
+        .absent{
+            border: none;
+            color: white;
+            border-radius: 8px;
+            background: rgb(238, 0, 0);
+        }
+    </style>
+    <div id="top-header">
+
+        <header>
+
+            <select name="branch" id="branch" onchange="DisplayStudents()">
+                <Option selected value="">Select branch</Option>
+                <option value="CM">Computer Technology</option>
+                <option value="ME">Mechanical Engineering</option>
+                <option value="EE">Electrical Engineering</option>
+                <option value="EJ">Electronics Engineering</option>
+                <option value="CE">Civil Engineering</option>
+            </select>
+
+
+            <select name="semester" id="semester" onchange="DisplayStudents()">
+                <Option selected value="">Select semester</Option>
+                <option value="1st sem">1st sem</option>
+                <option value="2nd sem">2nd sem</option>
+                <option value="3rd sem">3rd sem</option>
+                <option value="4th sem">4th sem</option>
+                <option value="5th sem">5th sem</option>
+                <option value="6th sem">6th sem</option>
+            </select>
+
+            <select name="subjects" id="subjects" onchange="DisplayStudents()">
+                <Option selected value="">Select subjects</Option>
+                <option value="Client Side Scripting (CSS)">Client Side Scripting (CSS)</option>
+                <option value="Advance Java Programming (AJP)">Advance Java Programming (AJP)</option>
+                <option value="Software Testing (STE)">Software Testing (STE)</option>
+                <option value="Environmental Studies (EVS)">Environmental Studies (EVS)</option>
+                <option value="Operating System (OSY)">Operating System (OSY)</option>
+            </select>
+
+
+
+            <div class="input-group mb-3">
+                <input type="date" class="form-control" placeholder="date" aria-label="date"
+                    aria-describedby="basic-addon1" id="date">
+            </div>
+
+        </header>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="studentName" placeholder="Student Full Name" aria-label="Student Full Name"
+                aria-describedby="button-addon2" required>
+            <input type="number" maxlength="10" class="form-control" id="studentEnrollment" placeholder="Student Enrollment" aria-label="Student Enrollment" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);"
+                aria-describedby="button-addon2" required>
+            <input type="text" class="form-control" id="studentRoll" placeholder="Student Rollno." aria-label="Student Rollnumber"
+                aria-describedby="button-addon2" required>
+            <input type="text" class="form-control" id="studentBranch" placeholder="Student Branch" aria-label="Student Branch"
+                aria-describedby="button-addon2" required>
+            <input type="text" class="form-control" id="studentSem" placeholder="Student Sem" aria-label="Student Sem"
+                aria-describedby="button-addon2" required>
+            <button onclick="addStudent()" class="btn btn-outline-secondary" type="button" id="button-addon2">Add Student</button>
+        </div>
+    </div>
+    <table class="table" align="center">
+        <thead>
+            <tr>
+                <th>Roll No.</th>
+                <th>Student Name</th>
+                <th>Attendance</th>
+            </tr>
+        </thead>
+        <tbody id="studentsData">
+        </tbody>
+    </table>
+    <script>
+        var branch = document.getElementById('branch')
+        var semester = document.getElementById('semester')
+        var subject = document.getElementById('subjects')
+        var date = document.getElementById('date');
+
+        var studentsData = document.getElementById('studentsData')
+        var studentName = document.getElementById('studentName')
+        var studentEnrollment = document.getElementById('studentEnrollment')
+        var studentRoll = document.getElementById('studentRoll')
+        var studentBranch = document.getElementById('studentBranch')
+        var studentSem = document.getElementById('studentSem')
+
+
+        async function addStudent(){
+            let response = await fetch('/add-student', {
+                headers:{ "Content-Type": "application/json"},
+                method: "POST",
+                body : JSON.stringify({Sname: studentName.value, Senroll: studentEnrollment.value, Sroll: studentRoll.value, Sbranch:  studentBranch.value, Ssem: studentSem.value})
+            })
+            let res = await response.json();
+            alert(res.msg);
+        }
+        async function DisplayStudents() {
+
+
+            const StData = { StBranch: branch.value, StSem: semester.value, StSub: subject.value }
+            let headersList = {
+                "Content-Type": "application/json"
+            }
+
+            let bodyContent = JSON.stringify(StData);
+
+            let response = await fetch("/student-details", {
+                method: "POST",
+                body: bodyContent,
+                headers: headersList
+            });
+
+            let student = await response.json();
+            console.log(student);
+            studentsData.innerHTML = ''
+            
+            student.forEach(data => {
+                let tr = document.createElement('tr');
+                let td1 = document.createElement('td')
+                td1.textContent = data.StudentRoll;
+                let td2 = document.createElement('td')
+                td2.textContent = data.StudentName;
+                let td3 = document.createElement('td')
+                td3.innerHTML = `<button class="present" onclick="markPresent(this, '${data.Enrollment}')">P</button> <button onclick="markAbsent(this, '${data.Enrollment}')" class="absent">A</button>`;
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
+                studentsData.appendChild(tr);
+            });
+
+        }
+        async function markPresent(elem, e) {
+            if (!date.value) {
+                alert('please fill the above values (Branch, Semester, Subject, Date)')
+                return;
+            }
+            let p = elem.parentElement;
+            p.innerHTML = '<button class="present">Present</button>'
+            const request = await fetch('/markAttendance', {
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({ mark: e, aDate: date.value, status: 'Present', aSubject: subject.value }),
+                method: 'POST'
+            })
+            const res = await request.data();
+
+        }
+        async function markAbsent(elem, e) {
+            if (!date.value) {
+                alert('please fill the above values (Branch, Semester, Subject, Date)')
+                return;
+            }
+            let p = elem.parentElement;
+            p.innerHTML = '<button class="absent">Absent</button>'
+            const request = await fetch('/markAttendance', {
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify({ mark: e, aDate: date.value, status: 'Absent', aSubject: subject.value }),
+                method: 'POST'
+            })
+            const res = await request.data();
+        }
+    </script>
+</body>
+
+</html>
